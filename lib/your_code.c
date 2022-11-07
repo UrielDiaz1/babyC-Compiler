@@ -146,6 +146,11 @@ ASTNode* CreateWhileNode(ASTNode* cond, ASTNode* stList)
 
 void AddDeclaration(char* name)
 {
+        if(!isalpha(name[0])) {
+                printf("Identifier name does not start with an alphabetic character.\n");
+                printf("Terminating program.\n");
+                EXIT_FAILURE;
+        }
 
 
 }
