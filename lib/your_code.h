@@ -4,7 +4,7 @@
 typedef enum{ASTNODE_ARITH_OP, ASTNODE_LOGIC_OP, ASTNODE_COMPARE, ASTNODE_ASSIGN, ASTNODE_IDENT, ASTNODE_NUM, ASTNODE_IF, ASTNODE_WHILE} ASTNodeType;
 
 // Define all operation types (add, mult, etc) here.
-typedef enum {ADD_OP, MULT_OP, DIV_OP, SUB_OP} ASTOp; 
+typedef enum {ADD_OP, MULT_OP, DIV_OP, SUB_OP, OR_OP, AND_OP, EQ_OP, NE_OP, LE_OP, GE_OP} ASTOp; 
 
 typedef struct ASTNode ASTNode;
 struct ASTNode{
