@@ -144,15 +144,74 @@ ASTNode* CreateWhileNode(ASTNode* cond, ASTNode* stList)
         return node;
 }
 
+////////////////////////////////////////////////////////////////////////////
+
+#define MAX_NAME 256
+#define TABLE_SIZE 20
+
+typedef struct ident_name {
+    char name[MAX_NAME];
+    struct ident_name *next;
+} ident_name;
+
+ident_name *hash_table[TABLE_SIZE];
+
+unsigned int hash(char *name) {
+    int length = strnlen(name, MAX_NAME);
+    unsigned int hash_value = 0;
+    for (int i = 0; i < length; i++) {
+        hash_value += name[i];
+        hash_value = (hash_value * name[i]) % TABLE_SIZE;
+    }
+    return hash_value;
+}
+
+void init_hash_table() {
+    for (int i = 0; i < TABLE_SIZE; i++) {
+        hash_table[i] = NULL;
+    }
+}
+
+bool check_name_validity(char* name) {
+    if(!isalpha(name[0])) {
+        printf("Identifier name '%s' does not start with an alphabetic character.\n", name);
+        printf("Terminating program.\n");
+        EXIT_FAILURE;
+    }
+    return true;
+}
+
+void *hash_table_lookup(char *name) {
+    int index = hash(name);
+    ident_name *tmp = hash_table[index];
+    while(tmp != NULL && strncmp(tmp->name, name, MAX_NAME) != 0) {
+        tmp = tmp->next;
+    }
+    if(tmp != NULL) {
+        printf("The identifier name %s is already in used.\n", tmp->name);
+        printf("Terminating program.\n");
+        EXIT_FAILURE;
+    }
+}
+
+bool hash_table_insert(ident_name *p) {
+    if(p == NULL) {
+        printf("Unable to insert null ident_name pointer.\n")
+        EXIT_FAILURE;
+    }
+    int index = hash(p->name);
+    p->next = hash_table[index];
+    hash_table[index] = p;
+    return true;
+}
+
 void AddDeclaration(char* name)
 {
-        if(!isalpha(name[0])) {
-                printf("Identifier name does not start with an alphabetic character.\n");
-                printf("Terminating program.\n");
-                EXIT_FAILURE;
+        if(check_name_validity) {
+                hash_table_lookup(name);
+                ident_name ident = {.name = name};
+                hash_table_insert(&ident);
         }
-
-
 }
 
 // Commented out in this assignment 
