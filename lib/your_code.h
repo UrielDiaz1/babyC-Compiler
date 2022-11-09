@@ -1,5 +1,10 @@
 #ifndef YOUR_CODE_H
 #define YOUR_CODE_H
+#include <stdbool.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <ctype.h>
+#include <string.h>
 
 typedef enum{ASTNODE_ARITH_OP, ASTNODE_LOGIC_OP, ASTNODE_COMPARE, ASTNODE_ASSIGN, ASTNODE_IDENT, ASTNODE_NUM, ASTNODE_IF, ASTNODE_WHILE} ASTNodeType;
 
@@ -22,33 +27,42 @@ struct ASTNode{
 
 };
 
+// The error function 
+extern void yyerror(char *);
+
+#define MAX_NAME 50
+#define TABLE_SIZE 900
+
+typedef struct ident_name {
+    char name[MAX_NAME];
+    struct ident_name *next;
+} ident_name;
+
+extern ident_name *symbol_table[TABLE_SIZE];
+
 // Add functions to create the different kinds of ASTNodes 
 // These functions are called by the code embedded in the grammar.
-// Here are some samples:
-ASTNode* CreateDeclarationListNode(ASTNode* dn, ASTNode* dnList);
-void AddDeclaration(char* name);
+ASTNode* CreateIdentNode(char* name);
+ASTNode* CreateNumNode(int num);
 ASTNode* CreateStatementListNode(ASTNode* st, ASTNode* stList);
+ASTNode* CreateDeclarationListNode(ASTNode* dn, ASTNode* dnList);
 ASTNode* CreateAssignmentNode(char* name, ASTNode* expr);
 ASTNode* CreateAdditionNode(ASTNode* expr, ASTNode* term);
 ASTNode* CreateSubtractionNode(ASTNode* expr, ASTNode* term);
 ASTNode* CreateMultiplicationNode(ASTNode* term, ASTNode* factor);
 ASTNode* CreateDivisionNode(ASTNode* term, ASTNode* factor);
-ASTNode* CreateIdentNode(char* name);
-ASTNode* CreateNumNode(int num);
 ASTNode* CreateIfNode(ASTNode* cond, ASTNode* stList);
 ASTNode* CreateIfElseNode(ASTNode* cond, ASTNode* stList1, ASTNode* stList2);
 ASTNode* CreateOrNode(ASTNode* cond, ASTNode* lterm);
 ASTNode* CreateAndNode(ASTNode* lterm, ASTNode* lfactor);
-ASTNode* CreateCompareNode(ASTNode* exprLeft, ASTOp op, ASTNode* exprRight);
+ASTNode* CreateCompareNode(ASTNode* exprLeft, int op, ASTNode* exprRight);
 ASTNode* CreateWhileNode(ASTNode* cond, ASTNode* stList);
 
-// Need a function to add a declaration to your symbol table
-void AddDeclaration(char* name);
 unsigned int hash(char *name);
-void init_hash_table();
-bool check_name_validity(char* name);
-void *hash_table_lookup(char *name);
-bool hash_table_insert(ident_name *p);
+void init_symbol_table();
+bool symbol_table_lookup(char *name);
+bool symbol_table_insert(ident_name *p);
+void AddDeclaration(char* name);
 
 // This is the function that generates ILOC code after the construction of the AST
 //void GenerateILOC(ASTNode* node);
