@@ -1,4 +1,4 @@
-# babyC-Compiler
+## babyC-Compiler
 A compiler for babyC.
 
 The program was developed and tested in Ubuntu 22.04.1
@@ -24,11 +24,11 @@ The program was developed and tested in Ubuntu 22.04.1
 # Running the Program
 1a. Open a terminal in the program's directory, where the makefile is located.
 
-2a. Run the following command to compile and create the executable file "bcc":<br />
+2a. Run the following command to compile and create the executable file *bcc*:<br />
     `make`
    
 2b. In the circumstance that you don't have the appropriate environment, a pre-built
-    executable file will be provided. It is called "bcc".
+    executable file will be provided. It is called *bcc*.
     
 3a. Drag and drop the "bcc" into the tests folder. 
 
