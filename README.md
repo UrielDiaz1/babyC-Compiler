@@ -8,7 +8,7 @@ The program was developed and tested in Ubuntu 22.04.1
 2. Update current packages by using the following command:<br />
    `sudo apt-get update`
    
-3. Install Flex, a tool that will help us recognize lexical patterns in text:<br />
+3. Install Flex, a tool that generates a scanner that will help us recognize lexical patterns in text:<br />
    `sudo apt-get install flex`
    
 4. Install Bison, the parser generator:<br />
