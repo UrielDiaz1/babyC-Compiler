@@ -1,6 +1,5 @@
-#include "your_code.h"
-
-ident_name *symbol_table[TABLE_SIZE];
+#include "node_actions.h"
+#include "symbol_table.h"
 
 /// @brief      Creates a num leaf node.
 /// @param num  Integer to be stored in the node.
@@ -9,7 +8,7 @@ ASTNode* CreateNumNode(int num) {
         // Allocate memory to num node.
         ASTNode* node;
         if((node = (ASTNode*)malloc(sizeof(ASTNode))) == NULL) {
-                yyerror("Unable to allocate memory to CreateNumNode.");
+                yyerror("Unable to allocate memory for CreateNumNode.");
         }
 
         node->type = ASTNODE_NUM; 
@@ -35,7 +34,7 @@ ASTNode* CreateIdentNode(char* name) {
         // Allocates memory for ident node.
         ASTNode* node;
         if((node = (ASTNode*)malloc(sizeof(ASTNode))) == NULL) {
-                yyerror("Unable to allocate memory to CreateIdentNode.");
+                yyerror("Unable to allocate memory for CreateIdentNode.");
         }
 
         node->type = ASTNODE_IDENT;
@@ -47,80 +46,48 @@ ASTNode* CreateIdentNode(char* name) {
 // to form a bigger statement list node (add the statement to the statement list).
 // Return a pointer to the bigger list that resulted from this linking
 ASTNode* CreateStatementListNode(ASTNode* st, ASTNode* stList) {
-        // Allocates memory for statement list node.
-        ASTNode* node;
-        if((node = (ASTNode*)malloc(sizeof(ASTNode))) == NULL) {
-                yyerror("Unable to allocate memory to CreateStatementListNode.");
-        }
-        
-        // Attach statement as left child if it's not null.
-        if(st) {
-                node->left = st;
+        // Checks if the statement node is null.
+        // Statements cannot be null, therefore an error must be thrown.
+        if(!st) {
+                yyerror("Null statement node in CreateStatementListNode.");
         }
 
-        // Attach statement list as right child if it's not null.
-        if(stList) {
-                node->right = stList;
-        }
-        return node;
-}
-
-/// @brief        Creates a declaration list node.
-/// @param dn     Reduced declaration node.
-/// @param dnList Reduced declaration list node.
-/// @return       Returns a declaration list node.
-ASTNode* CreateDeclarationListNode(ASTNode* dn, ASTNode* dnList) {
-        // Allocates memory for declaration list node.
-        ASTNode* node;
-        if((node = (ASTNode*)malloc(sizeof(ASTNode))) == NULL) {
-                yyerror("Unable to allocate memory to CreateDeclarationListNode.");
+        // Checks if the statement list node is null.
+        // This doesn't cause an error because statement lists are allowed to be empty.
+        if(!stList) {
+                // Since there's no list of statements, just return the single one.
+                return st;
         }
 
-        // Attach declaration as left child if not null.
-        if(dn) {
-                node->left = dn;
-        }
-
-        // Attach declaration list as right child if it's not null.
-        if(dnList) {
-                node->right = dnList;
-        }
-        return node;
+        // Attach the statement node to the statement list to create a big single node.
+        stList->next = st;
+        return stList;
 }
 
 /// @brief      Creates an assignment node.
 /// @param name Name of the LHS identifier.
 /// @param expr Reduced expression node. 
 /// @return     Returns an assignment node.
-ASTNode* CreateAssignmentNode(char* name, ASTNode* expr) {
+ASTNode* CreateAssignmentNode(ASTNode* ident, ASTNode* expr) {
         // Checks if name pointer is null.
-        if(!name) {
-                yyerror("Null name pointer in CreateAssignmentNode.");
+        if(!ident) {
+                yyerror("Null Ident pointer in CreateAssignmentNode.");
         }
 
         // Checks if expr node is null.
         if(!expr) {
-                yyerror("Null Expr node in CreateAssignmentNode.");
-        }
-
-        // Checks if identifier has been assigned.
-        if(!symbol_table_lookup(name)) {
-                yyerror("Ident not declared.");
+                yyerror("Null reduced Expr node in CreateAssignmentNode.");
         }
 
         // Allocates memory to assignment node.
         ASTNode* node;
         if((node = (ASTNode*)malloc(sizeof(ASTNode))) == NULL) {
-                yyerror("Unable to allocate memory to CreateAssignmentNode.");
+                yyerror("Unable to allocate memory for CreateAssignmentNode.");
         }
         
-        node->left = CreateIdentNode(name);
+        node->left = ident;
         node->right = expr;
-
-
-        node->name = name;
         node->type = ASTNODE_ASSIGN;
-        node->op = EQ_OP;
         return node;
 }
 
@@ -131,18 +98,18 @@ ASTNode* CreateAssignmentNode(char* name, ASTNode* expr) {
 ASTNode* CreateAdditionNode(ASTNode* expr, ASTNode* term) {
         // Check if expression node is null.
         if(!expr) {
-                yyerror("Null Expr node in addition node.");
+                yyerror("Null reduced Expr node in CreateAdditionNode.");
         }
 
         // Checks if term node is null.
         if(!term) {
-                yyerror("Null Term node in addition node.");
+                yyerror("Null reduced Term node in CreateAdditionNode.");
         }
 
         // Allocates memory for addition node.
         ASTNode* node;
         if((node = (ASTNode*)malloc(sizeof(ASTNode))) == NULL) {
-                yyerror("Unable to allocate memory to CreateAdditionNode.");
+                yyerror("Unable to allocate memory for CreateAdditionNode.");
         }
 
         node->left = expr;
@@ -159,18 +126,18 @@ ASTNode* CreateAdditionNode(ASTNode* expr, ASTNode* term) {
 ASTNode* CreateSubtractionNode(ASTNode* expr, ASTNode* term) {
         // Check if expression node is null.
         if(!expr) {
-                yyerror("Null Expr node in subtraction node.");
+                yyerror("Null reduced Expr node in CreateSubtractionNode.");
         }
 
         // Checks if term node is null.
         if(!term) {
-                yyerror("Null Term node in subtraction node.");
+                yyerror("Null reduced Term node in CreateSubtractionNode.");
         }
 
         // Allocates memory for subtraction node.
         ASTNode* node;
         if((node = (ASTNode*)malloc(sizeof(ASTNode))) == NULL) {
-                yyerror("Unable to allocate memory to CreateSubtractionNode.");
+                yyerror("Unable to allocate memory for CreateSubtractionNode.");
         }
 
         node->left = expr;
@@ -187,18 +154,18 @@ ASTNode* CreateSubtractionNode(ASTNode* expr, ASTNode* term) {
 ASTNode* CreateMultiplicationNode(ASTNode* term, ASTNode* factor) {
         // Check if term node is null.
         if(!term) {
-                yyerror("Null Term node in multiplication node.");
+                yyerror("Null reduced Term node in CreateMultiplicationNode.");
         }
 
         // Checks if factor node is null.
         if(!factor) {
-                yyerror("Null Factor node in multiplication node.");
+                yyerror("Null reduced Factor node in CreateMultiplicationNode.");
         }
 
         // Allocates memory for multiplication node.
         ASTNode* node;
         if((node = (ASTNode*)malloc(sizeof(ASTNode))) == NULL) {
-                yyerror("Unable to allocate memory to CreateMultiplicationNode.");
+                yyerror("Unable to allocate memory for CreateMultiplicationNode.");
         }
 
         node->left = term;
@@ -215,18 +182,18 @@ ASTNode* CreateMultiplicationNode(ASTNode* term, ASTNode* factor) {
 ASTNode* CreateDivisionNode(ASTNode* term, ASTNode* factor) {
         // Check if term node is null.
         if(!term) {
-                yyerror("Null Term node in division node.");
+                yyerror("Null reduced Term node in CreateDivisionNode.");
         }
 
         // Checks if factor node is null.
         if(!factor) {
-                yyerror("Null Factor node in division node.");
+                yyerror("Null reduced Factor node in CreateDivisionNode.");
         }
 
         // Allocates memory for division node.
         ASTNode* node;
         if((node = (ASTNode*)malloc(sizeof(ASTNode))) == NULL) {
-                yyerror("Unable to allocate memory to CreateDivisionNode.");
+                yyerror("Unable to allocate memory for CreateDivisionNode.");
         }
 
         node->left = term;
@@ -243,13 +210,13 @@ ASTNode* CreateDivisionNode(ASTNode* term, ASTNode* factor) {
 ASTNode* CreateIfNode(ASTNode* cond, ASTNode* stList) {
         // Checks if condition node is null.
         if(!cond) {
-                yyerror("Null condition node in if node.");
+                yyerror("Null Condition node in CreateIfNode.");
         }
 
         // Allocates memory for if node.
         ASTNode* node;
         if((node = (ASTNode*)malloc(sizeof(ASTNode))) == NULL) {
-                yyerror("Unable to allocate memory to CreateIfNode.");
+                yyerror("Unable to allocate memory for CreateIfNode.");
         }
 
         node->left = cond;
@@ -272,13 +239,13 @@ ASTNode* CreateIfNode(ASTNode* cond, ASTNode* stList) {
 ASTNode* CreateIfElseNode(ASTNode* cond, ASTNode* stList1, ASTNode* stList2) {
         // Checks if condition node is null.
         if(!cond) {
-                yyerror("Null condition node in if-else node.");
+                yyerror("Null Condition node in CreateIfElseNode.");
         }
 
         // Allocates memory for the if-else node.
         ASTNode* node;
         if((node = (ASTNode*)malloc(sizeof(ASTNode))) == NULL) {
-                yyerror("Unable to allocate memory to CreateIfElseNode.");
+                yyerror("Unable to allocate memory for CreateIfElseNode.");
         }
 
         node->left = cond;
@@ -304,18 +271,18 @@ ASTNode* CreateIfElseNode(ASTNode* cond, ASTNode* stList1, ASTNode* stList2) {
 ASTNode* CreateOrNode(ASTNode* cond, ASTNode* lTerm) {
         // Checks if reduced condition node is null.
         if(!cond) {
-                yyerror("Null reduced condition node in Or node.");
+                yyerror("Null Condition node in CreateOrNode.");
         }
 
         // Checks if reduced lTerm node is null.
         if(!lTerm) {
-                yyerror("Null reduced lTerm node in Or node.");
+                yyerror("Null reduced lTerm node in CreateOrNode.");
         }
 
         // Allocates memory for Or node.
         ASTNode* node;
         if((node = (ASTNode*)malloc(sizeof(ASTNode))) == NULL) {
-                yyerror("Unable to allocate memory to CreateOrNode.");
+                yyerror("Unable to allocate memory for CreateOrNode.");
         }
 
         node->left = cond;
@@ -332,18 +299,18 @@ ASTNode* CreateOrNode(ASTNode* cond, ASTNode* lTerm) {
 ASTNode* CreateAndNode(ASTNode* lTerm, ASTNode* lFactor) {
         // Checks if reduced lTerm node is null.
         if(!lTerm) {
-                yyerror("Null reduced lTerm node in And node.");
+                yyerror("Null reduced lTerm node in CreateAndNode.");
         }
 
         // Checks if reduced lFactor node is null.
         if(!lFactor) {
-                yyerror("Null reduced lFactor node in And node.");
+                yyerror("Null reduced lFactor node in CreateAndNode.");
         }
 
         // Allocates memory for And node.
         ASTNode* node;
         if((node = (ASTNode*)malloc(sizeof(ASTNode))) == NULL) {
-                yyerror("Unable to allocate memory to CreateAndNode.\n");
+                yyerror("Unable to allocate memory for CreateAndNode.\n");
         }
 
         node->left = lTerm;
@@ -359,20 +326,25 @@ ASTNode* CreateAndNode(ASTNode* lTerm, ASTNode* lFactor) {
 /// @param exprRight Reduced right expression node. 
 /// @return          Returns a compare node.
 ASTNode* CreateCompareNode(ASTNode* exprLeft, int op, ASTNode* exprRight) {
+        // Checks if operator is invalid.
+        if(op < 6 || op > 11) {
+                yyerror("Invalid Operator.");
+        }
+
         // Checks if left expression is null.
         if(!exprLeft) {
-                yyerror("Null left expression in compare node.");
+                yyerror("Null left reduced Expr in CreateCompareNode.");
         }
 
         // Checks if right expression is null.
         if(!exprRight) {
-                yyerror("Null right expression in compare node.");
+                yyerror("Null right reduced Expr in CreateCompareNode.");
         }
 
         // Allocates memory for compare node.
         ASTNode* node;
         if((node = (ASTNode*)malloc(sizeof(ASTNode))) == NULL) {
-                yyerror("Unable to allocate memory to CreateCompareNode.\n");
+                yyerror("Unable to allocate memory for CreateCompareNode.\n");
         }
 
         node->left = exprLeft;
@@ -389,115 +361,23 @@ ASTNode* CreateCompareNode(ASTNode* exprLeft, int op, ASTNode* exprRight) {
 ASTNode* CreateWhileNode(ASTNode* cond, ASTNode* stList) {
         // Checks if condition is null.
         if(!cond) {
-                yyerror("Null condition node in while node.");
+                yyerror("Null Condition node in CreateWhileNode.");
         }
 
         if(!stList) {
-                yyerror("Null statement list node in while node.");
+                yyerror("Null reduced StatementList node in CreateWhileNode.");
         }
 
         // Allocates memory for while node.
         ASTNode* node;
         if((node = (ASTNode*)malloc(sizeof(ASTNode))) == NULL) {
-                yyerror("Unable to allocate memory to CreateWhileNode.\n");
+                yyerror("Unable to allocate memory for CreateWhileNode.\n");
         }
 
         node->left = cond;
         node->right = stList;
         node->type = ASTNODE_WHILE;
         return node;
-}
-
-/// @brief      Maps an identifier name to an integer value.
-/// @param name Name to map. 
-/// @return     Returns the integer value that represents the identifier name.
-unsigned int hash(char *name) {
-        // Checks if name to hash is null.
-        if(name == NULL) {
-                yyerror("Unable to hash null name pointer.\n");
-        }
-
-        // Maps the name to an integer value.
-        int length = strnlen(name, MAX_NAME);
-        unsigned int hash_value = 0;
-        for (int i = 0; i < length; i++) {
-                hash_value += name[i];
-                hash_value = (hash_value * name[i]) % TABLE_SIZE;
-        }
-        return hash_value;
-}
-
-/// @brief Initializes the symbol table.
-void init_symbol_table() {
-    for(int i = 0; i < TABLE_SIZE; i++) {
-        symbol_table[i] = NULL;
-    }
-}
-
-/// @brief      Checks if an identifier name has been declared and
-///             inserted into the symbol table.
-/// @param name Identifier name to look up in the symbol table. 
-/// @return     Returns true if name was found, false if not found.
-bool symbol_table_lookup(char *name) {
-        // Checks if name to look up is null.
-        //print_table();
-        if(name == NULL) {
-                yyerror("Unable to look up null name pointer.\n");
-        }
-
-        int index = hash(name);
-        ident_name *tmp = symbol_table[index];
-        while(tmp != NULL && strncmp(tmp->name, name, MAX_NAME) != 0) {
-                tmp = tmp->next;
-        }
-
-        // If name was not found.
-        if(tmp == NULL) {
-                return false;
-        }
-        // If name was found.
-        else if(strncmp(tmp->name, name, MAX_NAME) == 0) {
-                return true;
-        }
-        else {
-                return false;
-        }
-}
-
-/// @brief    Inserts an identifier name into the symbol table.
-/// @param p  Name to insert into symbol table. 
-/// @return   Returns true if successful.
-bool symbol_table_insert(ident_name *p) {
-        // Checks if name to insert is null.
-        if(p == NULL) {
-                yyerror("Unable to insert null identifier name pointer.\n");
-        }
-
-        // Inserts name into symbol table.
-        int index = hash(p->name);
-        p->next = symbol_table[index];
-        symbol_table[index] = p;
-        return true;
-}
-
-/// @brief      Declares identifier names.
-/// @param name Identifier name to declare.
-void AddDeclaration(char* name) {
-        // Checks if name to be declared is null.
-        if(name == NULL) {
-                yyerror("Unable to declare null name pointer.\n");
-        }
-
-        // Verifies that the identifier has not been declared yet.
-        if(symbol_table_lookup(name)) {
-                char buf[250];
-                snprintf(buf, sizeof(buf), "%s'%s'.", "Multiple declarations of ", name);
-                char* b = buf;
-                yyerror(b);
-        }
-        ident_name *ident = (ident_name*)malloc(sizeof(ident_name));
-        strncpy(ident->name, name, MAX_NAME);
-        symbol_table_insert(ident);
 }
 
 // Commented out in this assignment 
