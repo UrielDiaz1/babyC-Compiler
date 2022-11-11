@@ -1,7 +1,7 @@
 ## babyC-Compiler
 A compiler for babyC.
 
-The program was developed and tested in Ubuntu 22.04.1
+The program was developed and tested in Ubuntu 22.04.1 & the ECS coding terminal.
 
 # Environment Setup (Linux Machine)
 1. Open a terminal.
@@ -30,7 +30,7 @@ The program was developed and tested in Ubuntu 22.04.1
 3. In the circumstance that you don't have the appropriate environment, a pre-built
    executable file will be provided. It is called *bcc*.
     
-4. Drag and drop the "bcc" into the tests folder. 
+4. Drag and drop the "bcc" into the testing directory. 
 
 5. To run the program on one of the testing files and have the output be displayed
    in the terminal, run the following command:<br />
@@ -42,3 +42,9 @@ The program was developed and tested in Ubuntu 22.04.1
     
 7. Example:<br />
    `./bcc test1.bc > test1.out`
+
+8. To display the differences between two files, the following command can be used:<br />
+   `diff <name_of_file>.out <name_of_file>.<testing_file_extension>`
+
+9. Example:<br />
+   `diff test1.out test1_result.txt`
