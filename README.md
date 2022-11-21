@@ -30,7 +30,7 @@ The program was developed and tested in Ubuntu 22.04.1 & the ECS coding terminal
 3. In the circumstance that you don't have the appropriate environment, a pre-built
    executable file will be provided. It is called *bcc*.
     
-4. Drag and drop the *bcc* into the testing directory. 
+4. Drag and drop the "bcc" into the testing directory. 
 
 5. To run the program on one of the testing files and have the output be displayed
    in the terminal, run the following command:<br />
