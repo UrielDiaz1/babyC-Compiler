@@ -63,8 +63,13 @@ ASTNode* CreateStatementListNode(ASTNode* st, ASTNode* stList) {
         }
 
         // Attach the statement node to the statement list to create a big single node.
-        stList->next = st;
-        return stList;
+        //ASTNode* current = stList;
+        //while(current) {
+                //current = current->next;
+        //}
+        //current = st;
+        st->next = stList;
+        return st;
 }
 
 /// @brief      Creates an assignment node.
@@ -390,23 +395,17 @@ int GenerateILOC(ASTNode* node) {
         int t2;
         // Checks if the AST is null.
         if(!node) {
-                return;
-        }
-
-        // Checks if this is a stList node.
-        // The next nodes are the appended statements, so they have precedence.
-        if(node->next) {
-                //GenerateILOC(node->next);
+                return -1;
         }
 
         switch(node->type) {
                 case ASTNODE_NUM:
                         res = GetNextReg();
-                        print("\tloadi %d -> r%d\n", node->num, res);
+                        printf("\tloadi %d -> r%d\n", node->num, res);
                         break;
                 case ASTNODE_IDENT:
                         res = GetNextReg();
-                        print("\tloadAI rarp, %d -> r%d\n", node->offset, res);
+                        printf("\tloadAI rarp, %d -> r%d\n", node->offset, res);
                         break;
                 case ASTNODE_ASSIGN:
                         // Ensures LHS is an ident node.
@@ -419,7 +418,7 @@ int GenerateILOC(ASTNode* node) {
 
                         t2 = GenerateILOC(node->right);
                         int offset = node->left->offset;
-                        print("\tstoreAI r%d -> rarp, %d\n", t2, offset);
+                        printf("\tstoreAI r%d -> rarp, %d\n", t2, offset);
                         break;
                 case ASTNODE_ARITH_OP:
                         t1 = GenerateILOC(node->left);
@@ -428,16 +427,16 @@ int GenerateILOC(ASTNode* node) {
 
                         switch(node->op) {
                                 case ADD_OP:
-                                        print("\tadd r%d, r%d -> r%d\n", t1, t2, res);
+                                        printf("\tadd r%d, r%d -> r%d\n", t1, t2, res);
                                         break;
                                 case SUB_OP:
-                                        print("\tsub r%d, r%d -> r%d\n", t1, t2, res);
+                                        printf("\tsub r%d, r%d -> r%d\n", t1, t2, res);
                                         break;
                                 case MULT_OP:
-                                        print("\tmult r%d, r%d -> r%d\n", t1, t2, res);
+                                        printf("\tmult r%d, r%d -> r%d\n", t1, t2, res);
                                         break;
                                 case DIV_OP:
-                                        print("\tdiv r%d, r%d -> r%d\n", t1, t2, res);
+                                        printf("\tdiv r%d, r%d -> r%d\n", t1, t2, res);
                                         break;
                                 default:
                                         yyerror("Invalid arithmetic operator.");
@@ -450,22 +449,22 @@ int GenerateILOC(ASTNode* node) {
 
                         switch(node->op) {
                                 case EQ_OP:
-                                        print("\tcmp_EQ r%d, r%d -> r%d\n", t1, t2, res);
+                                        printf("\tcmp_EQ r%d, r%d -> r%d\n", t1, t2, res);
                                         break;
                                 case LE_OP:
-                                        print("\tcmp_LE r%d, r%d -> r%d\n", t1, t2, res);
+                                        printf("\tcmp_LE r%d, r%d -> r%d\n", t1, t2, res);
                                         break;
                                 case GE_OP:
-                                        print("\tcmp_GE r%d, r%d -> r%d\n", t1, t2, res);
+                                        printf("\tcmp_GE r%d, r%d -> r%d\n", t1, t2, res);
                                         break;
                                 case NE_OP:
-                                        print("\tcmp_NE r%d, r%d -> r%d\n", t1, t2, res);
+                                        printf("\tcmp_NE r%d, r%d -> r%d\n", t1, t2, res);
                                         break;
                                 case LT_OP:
-                                        print("\tcmp_LT r%d, r%d -> r%d\n", t1, t2, res);
+                                        printf("\tcmp_LT r%d, r%d -> r%d\n", t1, t2, res);
                                         break;
                                 case GT_OP:
-                                        print("\tcmp_GT r%d, r%d -> r%d\n", t1, t2, res);
+                                        printf("\tcmp_GT r%d, r%d -> r%d\n", t1, t2, res);
                                         break;
                                 default:
                                         yyerror("Invalid relational operator.");
@@ -478,10 +477,10 @@ int GenerateILOC(ASTNode* node) {
 
                         switch(node->op) {
                                 case AND_OP:
-                                        print("\tand r%d, r%d -> r%d\n", t1, t2, res);
+                                        printf("\tand r%d, r%d -> r%d\n", t1, t2, res);
                                         break;
                                 case OR_OP:
-                                        print("\tor r%d, r%d -> r%d\n", t1, t2, res);
+                                        printf("\tor r%d, r%d -> r%d\n", t1, t2, res);
                                         break;
                                 default:
                                         yyerror("Invalid arithmetic operator.");
@@ -494,43 +493,49 @@ int GenerateILOC(ASTNode* node) {
 
                         // Checks if its an if-else statement.
                         if(!node->next) {
-                                print("\tcbr r%d -> L%d_T, L%d_M", t1, lbl, lbl);
+                                printf("\tcbr r%d -> L%d_T, L%d_M", t1, lbl, lbl);
                         }
                         else {
-                                print("\tcbr r%d -> L%d_T, L%d_E", t1, lbl, lbl);
+                                printf("\tcbr r%d -> L%d_T, L%d_E", t1, lbl, lbl);
                         }
 
                         // Deals with condition being true.
-                        print("L%d_T:\n", lbl);
+                        printf("L%d_T:\n", lbl);
                         GenerateILOC(node->right);
 
                         if(node->next) {
                                 // Deals with else body.
-                                print("L%d_E:\n", lbl);
+                                printf("L%d_E:\n", lbl);
                                 GenerateILOC(node->next);
                         }
 
                         // Label for when it's out of if statement.
-                        print("L%d_M:\n", lbl);
+                        printf("L%d_M:\n", lbl);
                         lbl--;
                         break;
                 case ASTNODE_WHILE:
                         lbl++;
                         // Deals with the compare.
-                        print("L%d_C:\n", lbl);
+                        printf("L%d_C:\n", lbl);
                         t1 = GenerateILOC(node->left);
-                        print("\tcbr r%d -> L%d_B, L%d_O", t1, lbl, lbl);
+                        printf("\tcbr r%d -> L%d_B, L%d_O", t1, lbl, lbl);
 
                         // Deals with body.
-                        print("L%d_B:\n", lbl);
+                        printf("L%d_B:\n", lbl);
                         t2 = GenerateILOC(node->right);
 
                         // Label for when it's out of while loop.
-                        print("L%d_O:\n", lbl);
+                        printf("L%d_O:\n", lbl);
                         lbl--;
                 default:
                         yyerror("Invalid node type.");
         }
+        // Checks if this is a stList node.
+        // The next nodes are the appended statements, so they have precedence.
+        if(node->next && node->type != ASTNODE_IF) {
+                GenerateILOC(node->next);
+        }
+
         return res;
 }
 

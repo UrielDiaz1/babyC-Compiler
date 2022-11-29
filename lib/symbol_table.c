@@ -89,7 +89,7 @@ void AddDeclaration(char* name) {
         }
 
         // Verifies that the identifier has not been declared yet.
-        if(!symbol_table_lookup(name)) {
+        if(symbol_table_lookup(name)) {
                 char buf[250];
                 snprintf(buf, sizeof(buf), "%s'%s'.", "Multiple declarations of ", name);
                 char* error_statement = buf;
