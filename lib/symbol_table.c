@@ -2,6 +2,7 @@
 #include "symbol_table.h"
 
 ident_name *symbol_table[TABLE_SIZE];
+int offset_counter = 0;
 
 /// @brief      Maps an identifier name to an integer value.
 /// @param name Name to map. 
@@ -36,7 +37,7 @@ void init_symbol_table() {
 ///             inserted into the symbol table.
 /// @param name Identifier name to look up in the symbol table. 
 /// @return     Returns true if name was found, false if not found.
-bool symbol_table_lookup(char *name) {
+ident_name* symbol_table_lookup(char *name) {
         // Checks if name to look up is null.
         if(name == NULL) {
                 yyerror("Unable to look up null name pointer.\n");
@@ -52,14 +53,14 @@ bool symbol_table_lookup(char *name) {
 
         // If name was not found.
         if(tmp == NULL) {
-                return false;
+                return NULL;
         }
         // If name was found.
         else if(strncmp(tmp->name, name, MAX_NAME) == 0) {
-                return true;
+                return tmp;
         }
         else {
-                return false;
+                return NULL;
         }
 }
 
@@ -88,7 +89,7 @@ void AddDeclaration(char* name) {
         }
 
         // Verifies that the identifier has not been declared yet.
-        if(symbol_table_lookup(name)) {
+        if(!symbol_table_lookup(name)) {
                 char buf[250];
                 snprintf(buf, sizeof(buf), "%s'%s'.", "Multiple declarations of ", name);
                 char* error_statement = buf;
@@ -98,5 +99,7 @@ void AddDeclaration(char* name) {
         // Proceeds to declare the identifier name.
         ident_name *ident = (ident_name*)malloc(sizeof(ident_name));
         strncpy(ident->name, name, MAX_NAME);
+        ident->offset = offset_counter;
+        offset_counter += 4;
         symbol_table_insert(ident);
 }

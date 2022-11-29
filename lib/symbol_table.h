@@ -12,13 +12,14 @@
 typedef struct ident_name {
     char name[MAX_NAME];
     struct ident_name *next;
+    int offset;
 } ident_name;
 extern ident_name *symbol_table[TABLE_SIZE];
 
 // Declares symbol table management functions.
 unsigned int hash(char *name);
 void init_symbol_table();
-bool symbol_table_lookup(char *name);
+ident_name* symbol_table_lookup(char *name);
 bool symbol_table_insert(ident_name *p);
 void AddDeclaration(char* name);
 

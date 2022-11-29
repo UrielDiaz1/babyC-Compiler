@@ -1,6 +1,8 @@
 #include "node_actions.h"
 #include "symbol_table.h"
 
+int register_counter = 0;
+
 /// @brief      Creates a num leaf node.
 /// @param num  Integer to be stored in the node.
 /// @return     Returns a num leaf node.
@@ -26,9 +28,9 @@ ASTNode* CreateIdentNode(char* name) {
         }
 
         // Checks if identifier has been assigned.
-        if(!symbol_table_lookup(name)) {
+        ident_name* tmp = symbol_table_lookup(name);
+        if(!tmp) {
                 yyerror("Ident not declared.");
-        
         }
 
         // Allocates memory for ident node.
@@ -39,6 +41,7 @@ ASTNode* CreateIdentNode(char* name) {
 
         node->type = ASTNODE_IDENT;
         node->name = name;
+        node->offset = tmp->offset;
         return node;
 }
 
@@ -344,7 +347,7 @@ ASTNode* CreateCompareNode(ASTNode* exprLeft, int op, ASTNode* exprRight) {
         // Allocates memory for compare node.
         ASTNode* node;
         if((node = (ASTNode*)malloc(sizeof(ASTNode))) == NULL) {
-                yyerror("Unable to allocate memory for CreateCompareNode.\n");
+                yyerror("Unable to allocate memory for CreateCompareNode");
         }
 
         node->left = exprLeft;
@@ -380,8 +383,159 @@ ASTNode* CreateWhileNode(ASTNode* cond, ASTNode* stList) {
         return node;
 }
 
-// Commented out in this assignment 
-/*void GenerateILOC(ASTNode* node);
-{
+int lbl = 0;
+int GenerateILOC(ASTNode* node) {
+        int res;
+        int t1;
+        int t2;
+        // Checks if the AST is null.
+        if(!node) {
+                return;
+        }
 
-}*/
+        // Checks if this is a stList node.
+        // The next nodes are the appended statements, so they have precedence.
+        if(node->next) {
+                //GenerateILOC(node->next);
+        }
+
+        switch(node->type) {
+                case ASTNODE_NUM:
+                        res = GetNextReg();
+                        print("\tloadi %d -> r%d\n", node->num, res);
+                        break;
+                case ASTNODE_IDENT:
+                        res = GetNextReg();
+                        print("\tloadAI rarp, %d -> r%d\n", node->offset, res);
+                        break;
+                case ASTNODE_ASSIGN:
+                        // Ensures LHS is an ident node.
+                        if(!node->left) {
+                                yyerror("LHS of Assignment is null.");
+                        }
+                        if(!(node->left->type == ASTNODE_IDENT)) {
+                                yyerror("LHS of Assignment is not an ident node.");
+                        }
+
+                        t2 = GenerateILOC(node->right);
+                        int offset = node->left->offset;
+                        print("\tstoreAI r%d -> rarp, %d\n", t2, offset);
+                        break;
+                case ASTNODE_ARITH_OP:
+                        t1 = GenerateILOC(node->left);
+                        t2 = GenerateILOC(node->right);
+                        res = GetNextReg();
+
+                        switch(node->op) {
+                                case ADD_OP:
+                                        print("\tadd r%d, r%d -> r%d\n", t1, t2, res);
+                                        break;
+                                case SUB_OP:
+                                        print("\tsub r%d, r%d -> r%d\n", t1, t2, res);
+                                        break;
+                                case MULT_OP:
+                                        print("\tmult r%d, r%d -> r%d\n", t1, t2, res);
+                                        break;
+                                case DIV_OP:
+                                        print("\tdiv r%d, r%d -> r%d\n", t1, t2, res);
+                                        break;
+                                default:
+                                        yyerror("Invalid arithmetic operator.");
+                        }
+                        break;
+                case ASTNODE_COMPARE:
+                        t1 = GenerateILOC(node->left);
+                        t2 = GenerateILOC(node->right);
+                        res = GetNextReg();
+
+                        switch(node->op) {
+                                case EQ_OP:
+                                        print("\tcmp_EQ r%d, r%d -> r%d\n", t1, t2, res);
+                                        break;
+                                case LE_OP:
+                                        print("\tcmp_LE r%d, r%d -> r%d\n", t1, t2, res);
+                                        break;
+                                case GE_OP:
+                                        print("\tcmp_GE r%d, r%d -> r%d\n", t1, t2, res);
+                                        break;
+                                case NE_OP:
+                                        print("\tcmp_NE r%d, r%d -> r%d\n", t1, t2, res);
+                                        break;
+                                case LT_OP:
+                                        print("\tcmp_LT r%d, r%d -> r%d\n", t1, t2, res);
+                                        break;
+                                case GT_OP:
+                                        print("\tcmp_GT r%d, r%d -> r%d\n", t1, t2, res);
+                                        break;
+                                default:
+                                        yyerror("Invalid relational operator.");
+                        }
+                        break;
+                case ASTNODE_LOGIC_OP:
+                        t1 = GenerateILOC(node->left);
+                        t2 = GenerateILOC(node->right);
+                        res = GetNextReg();
+
+                        switch(node->op) {
+                                case AND_OP:
+                                        print("\tand r%d, r%d -> r%d\n", t1, t2, res);
+                                        break;
+                                case OR_OP:
+                                        print("\tor r%d, r%d -> r%d\n", t1, t2, res);
+                                        break;
+                                default:
+                                        yyerror("Invalid arithmetic operator.");
+                        }
+                        break;
+                case ASTNODE_IF:
+                        lbl++;
+                        // Deals with the compare.
+                        t1 = GenerateILOC(node->left);
+
+                        // Checks if its an if-else statement.
+                        if(!node->next) {
+                                print("\tcbr r%d -> L%d_T, L%d_M", t1, lbl, lbl);
+                        }
+                        else {
+                                print("\tcbr r%d -> L%d_T, L%d_E", t1, lbl, lbl);
+                        }
+
+                        // Deals with condition being true.
+                        print("L%d_T:\n", lbl);
+                        GenerateILOC(node->right);
+
+                        if(node->next) {
+                                // Deals with else body.
+                                print("L%d_E:\n", lbl);
+                                GenerateILOC(node->next);
+                        }
+
+                        // Label for when it's out of if statement.
+                        print("L%d_M:\n", lbl);
+                        lbl--;
+                        break;
+                case ASTNODE_WHILE:
+                        lbl++;
+                        // Deals with the compare.
+                        print("L%d_C:\n", lbl);
+                        t1 = GenerateILOC(node->left);
+                        print("\tcbr r%d -> L%d_B, L%d_O", t1, lbl, lbl);
+
+                        // Deals with body.
+                        print("L%d_B:\n", lbl);
+                        t2 = GenerateILOC(node->right);
+
+                        // Label for when it's out of while loop.
+                        print("L%d_O:\n", lbl);
+                        lbl--;
+                default:
+                        yyerror("Invalid node type.");
+        }
+        return res;
+}
+
+// Returns the next register.
+int GetNextReg() {
+        register_counter += 1;
+        return register_counter;
+}

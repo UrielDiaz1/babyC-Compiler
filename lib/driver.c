@@ -27,6 +27,5 @@ int main(int argc, char**argv)
         fclose(yyin);
 
         // Now that the AST has been constructed, pass its root to the function that traverses it and generates the ILOC code.
-        // GenerateILOC(gASTRoot);
-        // Code generation is commented out in this assignment. You will implement it in the next assignment. 		
+        GenerateILOC(gASTRoot);	
 }

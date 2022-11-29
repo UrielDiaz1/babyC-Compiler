@@ -16,6 +16,7 @@ struct ASTNode{
 	char *name; 	// Need to store the actual variable name for ident nodes
 	ASTNode* left;  // Left child
 	ASTNode* right; // Right child
+	int offset;
 	
 	// The following pointer is just a suggestion; you don't have to use it if you have a better design.
 	ASTNode* next; // A pointer used to link statement nodes together in a statement list.
@@ -44,5 +45,5 @@ ASTNode* CreateCompareNode(ASTNode* exprLeft, int op, ASTNode* exprRight);
 ASTNode* CreateWhileNode(ASTNode* cond, ASTNode* stList);
 
 // This is the function that generates ILOC code after the construction of the AST
-//void GenerateILOC(ASTNode* node);
+int GenerateILOC(ASTNode* node);
 #endif
