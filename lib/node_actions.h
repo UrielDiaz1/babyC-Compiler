@@ -47,4 +47,6 @@ ASTNode* CreateWhileNode(ASTNode* cond, ASTNode* stList);
 // This is the function that generates ILOC code after the construction of the AST
 int GenerateILOC(ASTNode* node);
 int GetNextReg();
+void IncreaseNestingLevel();
+void DecreaseNestingLevel();
 #endif
