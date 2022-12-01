@@ -54,7 +54,7 @@ The program was developed and tested in Ubuntu 22.04.1 & the ECS coding terminal
    `diff test1.iloc test1_ref.iloc`
 
 # Cleaning Files
-1. To delete some of the auto-generated or junk files, run the following command:
+1. To delete some of the auto-generated or junk files, run the following command:<br />
    `make clean`
 
 2. The make clean command will only delete files with the following extensions:
