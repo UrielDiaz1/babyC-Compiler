@@ -47,9 +47,11 @@ ASTNode* CreateIdentNode(char* name) {
         return node;
 }
 
-// Take a statement node and a statement list node and connect them together
-// to form a bigger statement list node (add the statement to the statement list).
-// Return a pointer to the bigger list that resulted from this linking
+/// @brief        Take a statement node and a statement list node and connect them together
+///               to form a bigger statement list node (add the statement to the statement list).
+/// @param st     A reduced statement node.
+/// @param stList A node with linked reduced statement nodes.
+/// @return       Return a pointer to the bigger list that resulted from this linking 
 ASTNode* CreateStatementListNode(ASTNode* st, ASTNode* stList) {
         // Checks if the statement node is null.
         // Statements cannot be null, therefore an error must be thrown.
@@ -64,12 +66,6 @@ ASTNode* CreateStatementListNode(ASTNode* st, ASTNode* stList) {
                 return st;
         }
 
-        // Attach the statement node to the statement list to create a big single node.
-        //ASTNode* current = stList;
-        //while(current) {
-                //current = current->next;
-        //}
-        //current = st;
         st->next = stList;
         return st;
 }
@@ -399,6 +395,7 @@ int GenerateILOC(ASTNode* node) {
         int res;
         int t1;
         int t2;
+        int offset;
 
         // Checks if the AST is null.
         if(!node) {
@@ -425,7 +422,7 @@ int GenerateILOC(ASTNode* node) {
                         }
 
                         t2 = GenerateILOC(node->right);
-                        int offset = node->left->offset;
+                        offset = node->left->offset;
                         fprintf(fp, "\tstoreAI r%d -> rarp, %d\n", t2, offset);
                         break;
                 case ASTNODE_ARITH_OP:
@@ -547,6 +544,7 @@ int GenerateILOC(ASTNode* node) {
                 default:
                         yyerror("Invalid node type.");
         }
+        
         // Checks if this is a stList node.
         // The next nodes are the appended statements, so they have precedence.
         if(node->next && node->type != ASTNODE_IF) {
